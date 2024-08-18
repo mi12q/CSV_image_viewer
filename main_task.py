@@ -7,7 +7,7 @@ from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
 
 
-class ImageViewer(QMainWindow):
+class CSV_ImageViewer(QMainWindow):
     def __init__(self):
         """
         Инициализация основного окна приложения и установка пользовательского интерфейса.
@@ -183,6 +183,6 @@ class ImageViewer(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    viewer = ImageViewer()  # Создание экземпляра приложения
+    viewer = CSV_ImageViewer()  # Создание экземпляра класса CSV_ImageViewer
     viewer.show()  # Показ окна приложения
     sys.exit(app.exec_())  # Запуск главного цикла приложения
