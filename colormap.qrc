@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>colormap/CET-R1.csv</file>
+    </qresource>
+</RCC>
