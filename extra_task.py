@@ -2,9 +2,10 @@ import sys
 import pandas as pd
 import numpy as np
 from PIL import Image
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QPushButton, QFileDialog, QWidget, QComboBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QPushButton, QFileDialog, QWidget, \
+    QComboBox, QSpinBox
 from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtCore import Qt, QFile, QIODevice
+from PyQt5.QtCore import Qt, QFile, QIODevice, QTimer
 import colormap
 
 
@@ -14,7 +15,7 @@ class ImageViewer(QMainWindow):
         Инициализация основного окна приложения и установка пользовательского интерфейса.
         """
         super().__init__()
-        self.init_UI()
+
         self.images = []  # Список для хранения загруженных изображений
         self.image_names = []  # Список для хранения имен файлов
         self.loaded_files = set()  # Множество для хранения имен уже загруженных файлов
@@ -22,12 +23,20 @@ class ImageViewer(QMainWindow):
         self.color_map = None  # Переменная для хранения цветовой карты
         self.load_color_map()
 
+        self.slideshow_interval = 2000  # Интервал показа изображений (в миллисекундах)
+        self.is_slideshow_running = False  # Флаг для управления слайд-шоу
+        self.slideshow_timer = QTimer(self)  # Таймер для слайд-шоу
+        self.slideshow_timer.timeout.connect(self.next_image)  # Переключение на следующее изображение
+        self.init_UI()
+
+
     def init_UI(self):
         """
         Настройка пользовательского интерфейса, включая кнопки и метки.
         """
         self.setWindowTitle('Просмотр изображений CSV')
-        self.setGeometry(100, 100, 900, 700)
+        self.setFixedSize(900, 900)  # Установка фиксированного размера окна
+
         self.setStyleSheet("""
             QMainWindow {
                 background-color: #f0f0f0;  
@@ -137,6 +146,69 @@ class ImageViewer(QMainWindow):
         """)
         self.file_selector.currentIndexChanged.connect(self.switch_image)
         self.layout.addWidget(self.file_selector)
+
+        # Кнопка запуска слайд-шоу
+        self.start_slideshow_button = QPushButton('Запустить слайд-шоу')
+        self.start_slideshow_button.setStyleSheet("""
+            QPushButton {
+                background-color: #003366;  
+                color: white;               
+                border: none;              
+                padding: 10px 20px;        
+                text-align: center;         
+                font-family: 'Arial';       
+                font-size: 14px;            
+                font-weight: bold;          
+                margin: 4px 2px;            
+                cursor: pointer;            
+                border-radius: 5px;         
+            }
+            QPushButton:hover {
+                background-color: #002244; 
+            }
+        """)
+        self.start_slideshow_button.clicked.connect(self.start_slideshow)
+        self.layout.addWidget(self.start_slideshow_button)
+
+        # Кнопка остановки слайд-шоу
+        self.stop_slideshow_button = QPushButton('Остановить слайд-шоу')
+        self.stop_slideshow_button.setStyleSheet("""
+            QPushButton {
+                background-color: #d32f2f;  
+                color: white;               
+                border: none;              
+                padding: 10px 20px;        
+                text-align: center;         
+                font-family: 'Arial';       
+                font-size: 14px;            
+                font-weight: bold;          
+                margin: 4px 2px;            
+                cursor: pointer;            
+                border-radius: 5px;         
+            }
+            QPushButton:hover {
+                background-color: #b71c1c; 
+            }
+        """)
+        self.stop_slideshow_button.clicked.connect(self.stop_slideshow)
+        self.layout.addWidget(self.stop_slideshow_button)
+
+        # Поле для ввода интервала слайд-шоу
+        self.interval_spinbox = QSpinBox()
+        self.interval_spinbox.setRange(100, 10000)  # Интервал от 0.1 до 10 секунд
+        self.interval_spinbox.setValue(self.slideshow_interval)
+        self.interval_spinbox.setSuffix(' ms')
+        self.interval_spinbox.setStyleSheet("""
+            QSpinBox {
+                padding: 10px;              
+                border: 2px solid #003366;  
+                border-radius: 5px;         
+                font-family: 'Arial';       
+                font-size: 14px;            
+            }
+        """)
+        self.interval_spinbox.valueChanged.connect(self.update_interval)
+        self.layout.addWidget(self.interval_spinbox)
 
     def load_color_map(self):
         colormap_path = ":/colormap/CET-R1.csv"
@@ -259,6 +331,42 @@ class ImageViewer(QMainWindow):
             return
 
         self.images[self.current_image_index].save(file_path)
+
+    def start_slideshow(self):
+        """
+        Запуск слайд-шоу.
+        """
+        if not self.images:
+            print("Нет изображений для показа в слайд-шоу.")
+            return
+
+        if not self.is_slideshow_running:
+            self.is_slideshow_running = True
+            self.slideshow_timer.start(self.slideshow_interval)
+
+    def stop_slideshow(self):
+        """
+        Остановка слайд-шоу.
+        """
+        if self.is_slideshow_running:
+            self.is_slideshow_running = False
+            self.slideshow_timer.stop()
+
+    def next_image(self):
+        """
+        Переключение на следующее изображение в слайд-шоу.
+        """
+        if self.images:
+            self.current_image_index = (self.current_image_index + 1) % len(self.images)
+            self.show_image(self.current_image_index)
+
+    def update_interval(self):
+        """
+        Обновление интервала слайд-шоу.
+        """
+        self.slideshow_interval = self.interval_spinbox.value()
+        if self.is_slideshow_running:
+            self.slideshow_timer.setInterval(self.slideshow_interval)
 
 
 if __name__ == '__main__':

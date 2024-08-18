@@ -24,7 +24,7 @@ class ImageViewer(QMainWindow):
         Настройка пользовательского интерфейса, включая кнопки и метки.
         """
         self.setWindowTitle('Просмотр изображений CSV')
-        self.setGeometry(100, 100, 900, 700)
+        self.setFixedSize(900, 900)  # Установка фиксированного размера окна
 
         self.setStyleSheet("""
             QMainWindow {
