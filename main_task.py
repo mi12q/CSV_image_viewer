@@ -13,29 +13,30 @@ class ImageViewer(QMainWindow):
         Инициализация основного окна приложения и установка пользовательского интерфейса.
         """
         super().__init__()
-        self.init_UI()
         self.images = []  # Список для хранения загруженных изображений
-        self.image_names = []  # Список для хранения имен файлов
+        self.image_names = []  # Список для хранения имен файлов изображений
         self.loaded_files = set()  # Множество для хранения имен уже загруженных файлов
-        self.current_image_index = 0
+        self.current_image_index = 0  # Индекс текущего отображаемого изображения
+        self.init_UI()  # Инициализация пользовательского интерфейса
 
     def init_UI(self):
         """
         Настройка пользовательского интерфейса, включая кнопки и метки.
         """
-        self.setWindowTitle('Просмотр изображений CSV')
+        self.setWindowTitle('Просмотр изображений CSV')  # Заголовок окна
         self.setFixedSize(900, 900)  # Установка фиксированного размера окна
 
+        # Установка стиля для основного окна
         self.setStyleSheet("""
             QMainWindow {
                 background-color: #f0f0f0;  
             }
         """)
 
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
-        self.layout = QVBoxLayout()
-        self.central_widget.setLayout(self.layout)
+        self.central_widget = QWidget()  # Создание центрального виджета
+        self.setCentralWidget(self.central_widget)  # Установка центрального виджета
+        self.layout = QVBoxLayout()  # Создание вертикального расположения виджетов
+        self.central_widget.setLayout(self.layout)  # Установка компоновки для центрального виджета
 
         # Метка для отображения изображения
         self.image_label = QLabel('Изображение не загружено')
@@ -69,7 +70,7 @@ class ImageViewer(QMainWindow):
                 background-color: #002244;  
             }
         """)
-        self.load_button.clicked.connect(self.load_csv_files)
+        self.load_button.clicked.connect(self.load_csv_files)  # Подключение обработчика нажатия кнопки
         self.layout.addWidget(self.load_button)
 
         # Кнопка сохранения изображения
@@ -109,8 +110,8 @@ class ImageViewer(QMainWindow):
                 border: none;
             }
         """)
-        self.file_selector.currentIndexChanged.connect(self.switch_image)
-        self.layout.addWidget(self.file_selector)
+        self.file_selector.currentIndexChanged.connect(self.switch_image)  # Подключение обработчика изменения выбранного элемента
+        self.layout.addWidget(self.file_selector)  # Добавление выпадающего списка в компоновку
 
     def load_csv_files(self):
         """
@@ -120,11 +121,11 @@ class ImageViewer(QMainWindow):
         if not files:
             return
 
-        new_files = []
+        new_files = []  # Список для новых файлов
         for file in files:
-            file_name = file.split('/')[-1]
+            file_name = file.split('/')[-1]  # Извлечение имени файла из пути
             if file_name not in self.loaded_files:
-                self.loaded_files.add(file_name)
+                self.loaded_files.add(file_name)  # Добавление имени файла в множество загруженных файлов
                 new_files.append(file)
 
         try:
@@ -133,7 +134,7 @@ class ImageViewer(QMainWindow):
             self.image_names.extend([file.split('/')[-1] for file in new_files])
             self.file_selector.addItems([file.split('/')[-1] for file in new_files])
             if self.image_names:
-                self.show_image(0)
+                self.show_image(0)  # Показываем первое изображение
         except Exception as e:
             print(f"Ошибка при загрузке файлов: {e}")
 
@@ -143,9 +144,9 @@ class ImageViewer(QMainWindow):
         :param file_path: Путь к CSV файлу
         :return: Объект изображения PIL
         """
-        df = pd.read_csv(file_path, delimiter=';', header=None)
-        data = df.values
-        return Image.fromarray(np.uint8(data), 'L')
+        df = pd.read_csv(file_path, delimiter=';', header=None)  # Чтение CSV файла
+        data = df.values  # Преобразование данных в массив
+        return Image.fromarray(np.uint8(data), 'L')  # Создание изображения в градациях серого
 
     def show_image(self, index):
         """
@@ -153,35 +154,35 @@ class ImageViewer(QMainWindow):
         :param index: Индекс изображения в списке
         """
         if 0 <= index < len(self.images):
-            self.current_image_index = index
+            self.current_image_index = index  # Обновление текущего индекса изображения
             image = self.images[index]
             q_image = QImage(image.tobytes(), image.width, image.height, image.width, QImage.Format_Grayscale8)
             pixmap = QPixmap.fromImage(q_image)
-            self.image_label.setPixmap(pixmap.scaled(self.image_label.size(), Qt.KeepAspectRatio))
+            self.image_label.setPixmap(pixmap.scaled(self.image_label.size(), Qt.KeepAspectRatio))  # Отображение изображения в метке
 
     def switch_image(self, index):
         """
         Переключение изображения при выборе из выпадающего списка.
         :param index: Индекс выбранного изображения
         """
-        self.show_image(index)
+        self.show_image(index)  # Отображение выбранного изображения
 
     def save_image(self):
         """
         Сохранение текущего изображения в файл.
         """
         if not self.images:
-            return
+            return  # Если нет изображений, выход из функции
 
         file_path, _ = QFileDialog.getSaveFileName(self, 'Сохранить изображение', '', 'Image Files (*.jpg *.png *.bmp)')
         if not file_path:
-            return
+            return  # Если путь не указан, выход из функции
 
-        self.images[self.current_image_index].save(file_path)
+        self.images[self.current_image_index].save(file_path)  # Сохранение изображения в файл
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    viewer = ImageViewer()
-    viewer.show()
-    sys.exit(app.exec_())
+    viewer = ImageViewer()  # Создание экземпляра приложения
+    viewer.show()  # Показ окна приложения
+    sys.exit(app.exec_())  # Запуск главного цикла приложения
