@@ -39,5 +39,6 @@
 
 - Цветовая карта применяется только к изображениям в градационном формате (чёрно-белым).
   ![image](https://github.com/user-attachments/assets/6c9ae30c-7939-44eb-9a16-90c0fc914caa)
+  После применения цветовой карты:
   ![image](https://github.com/user-attachments/assets/47a7fdf7-af41-4af0-a0fb-4cf02c456e37)
 
