@@ -15,10 +15,10 @@ class CSV_ImageViewer(QMainWindow):
         super().__init__()
 
         # Инициализация переменных
-        self.images = []  # Здесь будут храниться загруженные изображения
+        self.images = []  # Список для хранения изображений
         self.image_names = []  # Список имен файлов изображений
         self.loaded_files = set()  # Множество для отслеживания уже загруженных файлов
-        self.current_image_index = 0  # Индекс текущего отображаемого изображения
+        self.current_index = 0  # Индекс текущего отображаемого изображения
 
         self.init_UI()  # Настройка пользовательского интерфейса
 
@@ -75,7 +75,7 @@ class CSV_ImageViewer(QMainWindow):
             }
         """)
         self.load_button.clicked.connect(self.load_csv_files)  # Подключаем обработчик для кнопки
-        self.layout.addWidget(self.load_button)  # Добавляем кнопку в компоновку
+        self.layout.addWidget(self.load_button)  # Добавляем кнопку
 
         # Кнопка для сохранения изображения
         self.save_button = QPushButton('Сохранить изображение')
@@ -98,7 +98,7 @@ class CSV_ImageViewer(QMainWindow):
             }
         """)
         self.save_button.clicked.connect(self.save_image)  # Подключаем обработчик для кнопки
-        self.layout.addWidget(self.save_button)  # Добавляем кнопку в компоновку
+        self.layout.addWidget(self.save_button)  # Добавляем кнопку
 
         # Выпадающий список для выбора изображений
         self.file_selector = QComboBox()
@@ -159,7 +159,7 @@ class CSV_ImageViewer(QMainWindow):
         :param index: Индекс изображения в списке
         """
         if 0 <= index < len(self.images):
-            self.current_image_index = index  # Обновляем текущий индекс изображения
+            self.current_index = index  # Обновляем текущий индекс изображения
             image = self.images[index]
             q_image = QImage(image.tobytes(), image.width, image.height, image.width, QImage.Format_Grayscale8)
             pixmap = QPixmap.fromImage(q_image)
@@ -183,7 +183,7 @@ class CSV_ImageViewer(QMainWindow):
         if not file_path:
             return  # Если путь не указан, выходим
 
-        self.images[self.current_image_index].save(file_path)  # Сохраняем текущее изображение
+        self.images[self.current_index].save(file_path)  # Сохраняем текущее изображение
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)  # Создание объекта приложения

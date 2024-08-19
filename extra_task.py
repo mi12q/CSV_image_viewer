@@ -2,8 +2,7 @@ import sys
 import pandas as pd
 import numpy as np
 from PIL import Image
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QPushButton, QFileDialog, QWidget, \
-    QComboBox, QSpinBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QPushButton, QFileDialog, QWidget, QComboBox, QSpinBox
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt, QFile, QIODevice, QTimer
 import colormap
@@ -20,11 +19,11 @@ class CSV_ImageViewer(QMainWindow):
         # Инициализация переменных
         self.images = []  # Список для хранения изображений
         self.image_names = []  # Список для хранения имен файлов изображений
-        self.loaded_files = set()  # Множество для хранения загруженных файлов (избегаем дублирования)
-        self.current_image_index = 0  # Индекс текущего изображения в списке
+        self.loaded_files = set()  # Множество для хранения загруженных файлов
+        self.current_index = 0  # Индекс текущего изображения в списке
         self.color_map = None  # Цветовая карта для преобразования изображений
         self.slideshow_interval = 2000  # Интервал между сменой изображений в слайд-шоу (в миллисекундах)
-        self.is_slideshow_running = False  # Флаг, указывающий на состояние слайд-шоу
+        self.is_running = False  # Флаг, указывающий на состояние слайд-шоу
         self.slideshow_timer = QTimer(self)  # Таймер для слайд-шоу
 
         # Подключение слота для переключения изображений по таймеру
@@ -110,8 +109,8 @@ class CSV_ImageViewer(QMainWindow):
                 background-color: #002244;
             }
         """)
-        self.save_button.clicked.connect(self.save_image)  # Подключаем действие кнопки к функции сохранения изображения
-        self.layout.addWidget(self.save_button)
+        self.save_button.clicked.connect(self.save_image)  # Подключаем обработчик для кнопки
+        self.layout.addWidget(self.save_button) # Добавляем кнопку
 
         # Создаем кнопку для применения цветовой карты к изображению
         self.apply_color_map_button = QPushButton('Применить цветовую карту')
@@ -133,7 +132,7 @@ class CSV_ImageViewer(QMainWindow):
                 background-color: #002244;
             }
         """)
-        self.apply_color_map_button.clicked.connect(self.apply_color_map)  # Подключаем действие кнопки к функции применения цветовой карты
+        self.apply_color_map_button.clicked.connect(self.apply_color_map)  # Подключаем обработчик для кнопки
         self.layout.addWidget(self.apply_color_map_button)
 
         # Создаем выпадающий список для выбора изображений
@@ -173,7 +172,7 @@ class CSV_ImageViewer(QMainWindow):
                 background-color: #002244;
             }
         """)
-        self.start_slideshow_button.clicked.connect(self.start_slideshow)  # Подключаем действие кнопки к функции запуска слайд-шоу
+        self.start_slideshow_button.clicked.connect(self.start_slideshow)
         self.layout.addWidget(self.start_slideshow_button)
 
         # Создаем кнопку для остановки слайд-шоу
@@ -196,8 +195,7 @@ class CSV_ImageViewer(QMainWindow):
                 background-color: #b71c1c;
             }
         """)
-        self.stop_slideshow_button.clicked.connect(
-            self.stop_slideshow)  # Подключаем действие кнопки к функции остановки слайд-шоу
+        self.stop_slideshow_button.clicked.connect(self.stop_slideshow)
         self.layout.addWidget(self.stop_slideshow_button)
 
         # Создаем поле для ввода интервала слайд-шоу
@@ -214,8 +212,7 @@ class CSV_ImageViewer(QMainWindow):
                 font-size: 14px;
             }
         """)
-        self.interval_spinbox.valueChanged.connect(
-            self.update_interval)  # Подключаем изменение значения к функции обновления интервала
+        self.interval_spinbox.valueChanged.connect(self.update_interval)  # Подключаем изменение значения к функции обновления интервала
         self.layout.addWidget(self.interval_spinbox)
 
     def load_color_map(self):
@@ -276,11 +273,11 @@ class CSV_ImageViewer(QMainWindow):
             return
 
         try:
-            image = self.images[self.current_image_index]
+            image = self.images[self.current_index]
             if image.mode == 'L':  # Если изображение градационного типа
                 color_mapped_image = Image.fromarray(self.color_map[image], 'RGB')  # Применение цветовой карты
-                self.images[self.current_image_index] = color_mapped_image  # Замена изображения
-                self.show_image(self.current_image_index)  # Отображение обновленного изображения
+                self.images[self.current_index] = color_mapped_image  # Замена изображения
+                self.show_image(self.current_index)  # Отображение обновленного изображения
             else:
                 print("Цветовая карта применяется только к градационным изображениям.")
         except Exception as e:
@@ -319,14 +316,13 @@ class CSV_ImageViewer(QMainWindow):
         :param index: Индекс изображения в списке
         """
         if 0 <= index < len(self.images):
-            self.current_image_index = index
+            self.current_index = index
             image = self.images[index]
             # Конвертирование изображения PIL в формат QImage
             q_image = QImage(image.tobytes(), image.width, image.height, image.width * len(image.getbands()),
                              QImage.Format_RGB888 if image.mode == 'RGB' else QImage.Format_Grayscale8)
             pixmap = QPixmap.fromImage(q_image)
-            self.image_label.setPixmap(pixmap.scaled(self.image_label.size(),
-                                                     Qt.KeepAspectRatio))  # Отображение изображения с сохранением пропорций
+            self.image_label.setPixmap(pixmap.scaled(self.image_label.size(), Qt.KeepAspectRatio))  # Отображение изображения с сохранением пропорций
 
     def switch_image(self, index):
         """
@@ -346,7 +342,7 @@ class CSV_ImageViewer(QMainWindow):
         if not file_path:
             return
 
-        self.images[self.current_image_index].save(file_path)  # Сохранение изображения по указанному пути
+        self.images[self.current_index].save(file_path)  # Сохранение изображения по указанному пути
 
     def start_slideshow(self):
         """
@@ -356,16 +352,16 @@ class CSV_ImageViewer(QMainWindow):
             print("Нет изображений для слайд-шоу.")
             return
 
-        if not self.is_slideshow_running:
-            self.is_slideshow_running = True
+        if not self.is_running:
+            self.is_running = True
             self.slideshow_timer.start(self.slideshow_interval)  # Запуск таймера с указанным интервалом
 
     def stop_slideshow(self):
         """
         Остановка слайд-шоу.
         """
-        if self.is_slideshow_running:
-            self.is_slideshow_running = False
+        if self.is_running:
+            self.is_running = False
             self.slideshow_timer.stop()  # Остановка таймера
 
     def next_image(self):
@@ -373,15 +369,17 @@ class CSV_ImageViewer(QMainWindow):
         Переключение на следующее изображение в слайд-шоу.
         """
         if self.images:
-            self.current_image_index = (self.current_image_index + 1) % len(self.images)
-            self.show_image(self.current_image_index)  # Показ следующего изображения
+            self.current_index += 1
+            if self.current_index >= len(self.images):
+                self.current_index = 0
+            self.show_image(self.current_index)  # Показ следующего изображения
 
     def update_interval(self):
         """
         Обновление интервала смены изображений в слайд-шоу.
         """
         self.slideshow_interval = self.interval_spinbox.value()
-        if self.is_slideshow_running:
+        if self.is_running:
             self.slideshow_timer.setInterval(self.slideshow_interval)  # Установка нового интервала для таймера
 
 
